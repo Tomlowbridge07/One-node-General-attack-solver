@@ -1,4 +1,7 @@
 source("General attack solver.R")
+library(ggplot2)
+library(reshape)
+library(tikzDevice)
 
 IterationSolver<-function(Omega,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis="CDF")
 {
@@ -27,8 +30,71 @@ IterationSolver<-function(Omega,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAtt
    
    #Now see if equilibrium value has changed (Equally we could see if plan has changed ??)
    
-   Tolerance=abs(EvaluatedEquilibrium-OldEquilibriumValue)/OldEquilibriumValue
+   Tolerance=abs(EvaluatedEquilibrium-OldEquilibriumValue)
    Step=Step+1
  }
  return(list(Plan=CurrentPlan,EquilibriumValue=EvaluatedEquilibrium))
+}
+
+SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis="CDF")
+{
+ #For each omega we run the code, store g for that omega
+ OmegaIncrease=(OmegaMax-OmegaMin)/OmegaSteps
+ CurrentPlan=matrix(rep(-1,(B+1)*(b+1)),nrow=B+1,ncol=b+1)
+ OmegaEquilibrium=matrix(nrow=2,ncol=OmegaSteps+1)
+ Plans=list(length=OmegaSteps+1)
+ PlanChanging=vector(length=0)
+ 
+ for(i in 1:(OmegaSteps+1))
+ {
+   Omega=OmegaMin+(i-1)*OmegaIncrease
+   #Run iteration solver to find plan and g
+   Solved=IterationSolver(Omega,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis)
+   g=Solved$EquilibriumValue
+   Plan=Solved$Plan
+   Plans[[i]]=Plan
+   OmegaEquilibrium[1,i]=Omega
+   OmegaEquilibrium[2,i]=g
+   
+   #See if the plan changes
+   if(!all(CurrentPlan==Plan))
+   {
+     PlanChanging=c(PlanChanging,Omega)
+   }
+   CurrentPlan=Plan
+ }
+ return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,Plans=Plans,PlansChangingPoints=PlanChanging))
+}
+
+PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging)
+{
+  XCoordinates=OmegaEquilibriumMatrix[1,]
+  YCoordinates=OmegaEquilibriumMatrix[2,]
+  YBoundary=rep(0.1,length(XCoordinates))
+  XYCoordinatedataframe=data.frame(XCoordinates)
+  XYCoordinatedataframe<-cbind(XYCoordinatedataframe,YCoordinates)
+  XYCoordinatedataframe<-cbind(XYCoordinatedataframe,YBoundary)
+  print(XYCoordinatedataframe)
+  DataFrame<-XYCoordinatedataframe
+  print(DataFrame)
+  MeltedDataFrame<-melt(DataFrame,id="XCoordinates")
+  print(MeltedDataFrame)
+  
+  XPointChanging=PlanChanging
+  print(XPointChanging)
+  YPointChanging=rep(0,length(XPointChanging))
+  print(YPointChanging)
+  for(i in 1:length(XPointChanging))
+  {
+   YPointChanging[i]=YCoordinates[which(XCoordinates==XPointChanging[i])]
+  }
+  print(YPointChanging)
+  XYPointdataframe<-data.frame(XPointChanging)
+  XYPointdataframe<-cbind(XPointChanging,YPointChanging)
+  MeltedDataFrame2<-melt(as.data.frame(XYPointdataframe),id="XPointChanging")
+  print(XYPointdataframe)
+  print(MeltedDataFrame2)
+  
+  Plot<-ggplot(MeltedDataFrame,aes(x=XCoordinates,y=value,color=variable),show.legend='True')+geom_line()+geom_point(aes(x=XPointChanging,y=YPointChanging),data=MeltedDataFrame2,inherit.aes = F)
+  print(Plot)
 }

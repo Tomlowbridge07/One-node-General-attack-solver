@@ -2,10 +2,9 @@ source("Truncated Poisson distribution.R")
 
 #This file contains fuctions to solve the problem given g the equilibrium cost
 
-#Uniform test on 0 t0 3.7 attack times
 TestPDFunction<-function(x)
 {
- return(1/3.7) 
+ return(matrix(c(1.7,3.2,0.2,0.8),nrow=2,ncol=2,byrow = T)) 
 }
 
 GenerateCDF<-function(AttackTimePDFDistribution,Type="Continuous")
@@ -20,8 +19,54 @@ GenerateCDF<-function(AttackTimePDFDistribution,Type="Continuous")
   }
   else if(Type=="Discrete")
   {
-    #Placeholder for work around
-  }
+    CDFDistribtion<-function(value)
+    {
+     #Use any value to return pmf matrix
+     DiscreteMatrix=AttackTimePDFDistribution(1)
+     NumOfSup=ncol(DiscreteMatrix)
+     CumProb=vector(length=NumOfSup)
+     for(i in 1:NumOfSup)
+     {
+       if(i==1)
+       {
+         CumProb[1]=DiscreteMatrix[2,1]
+         if(value<DiscreteMatrix[1,1])
+         {
+           return(0)
+         }
+         else if(value<DiscreteMatrix[1,2])
+         {
+           return(CumProb[1])
+         }
+       }
+       else if(i!=1 && i!=NumOfSup)
+       {
+         CumProb[i]=CumProb[i-1]+DiscreteMatrix[2,i]
+         if(value<DiscreteMatrix[1,i])
+         {
+           return(CumProb[i-1])
+         }
+         else if(value<DiscreteMatrix[1,i+1])
+         {
+           return(CumProb[i])
+         }
+       }
+       else
+       {
+         CumProb[NumOfSup]==CumProb[NumOfSup-1]+DiscreteMatrix[2,NumOfSup]
+         if(value<DiscreteMatrix[1,NumOfSup])
+         {
+           return(CumProb[NumOfSup])
+         }
+         else if(value>=DiscreteMatrix[1,NumOfSup])
+         {
+           return(1)
+         }
+       }
+     }
+    }
+    return(CDFDistribtion)
+  }  
 }
 
 #Generate the cost to progress matrix
@@ -59,8 +104,6 @@ FindRenewInRow<-function(CurrentRowNum,EquilibriumCost,NextRowRenewIn,CostsToPro
   }
   
   #Compare and decide
-  print(CostIfRenew)
-  print(CostIfNotRenew)
   if(CostIfRenew <= CostIfNotRenew)
   {
     #we should renew, set currentRowRenewIn=0
