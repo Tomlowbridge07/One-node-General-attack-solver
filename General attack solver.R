@@ -7,6 +7,26 @@ TestPDFunction<-function(x)
  return(matrix(c(1.7,3.2,0.2,0.8),nrow=2,ncol=2,byrow = T)) 
 }
 
+TestPDF<-function(x)
+{
+  return((2/(3.7^2))*x)
+}
+
+TestPDF1<-function(x)
+{
+  return(matrix(c(1.7,2.4,3.2,0.2,0.3,0.5),nrow=2,ncol=2,byrow = T))
+}
+
+TestPDF2<-function(x)
+{
+  return(matrix(c(1.2,2.2,3.2,0.1,0.4,0.5),nrow=2,ncol=2,byrow = T))
+}
+
+TestPDF3<-function(x)
+{
+  return((3/(3.7^3))*x)
+}
+
 GenerateCDF<-function(AttackTimePDFDistribution,Type="Continuous")
 {
   if(Type=="Continuous")

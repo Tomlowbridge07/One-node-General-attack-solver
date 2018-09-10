@@ -42,8 +42,10 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
  OmegaIncrease=(OmegaMax-OmegaMin)/OmegaSteps
  CurrentPlan=matrix(rep(-1,(B+1)*(b+1)),nrow=B+1,ncol=b+1)
  OmegaEquilibrium=matrix(nrow=2,ncol=OmegaSteps+1)
- Plans=list(length=OmegaSteps+1)
+ FullPlans=list(length=OmegaSteps+1)
  PlanChanging=vector(length=0)
+ Plans=list()
+ PlanChangingCounter=1
  
  for(i in 1:(OmegaSteps+1))
  {
@@ -52,7 +54,7 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
    Solved=IterationSolver(Omega,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis)
    g=Solved$EquilibriumValue
    Plan=Solved$Plan
-   Plans[[i]]=Plan
+   FullPlans[[i]]=Plan
    OmegaEquilibrium[1,i]=Omega
    OmegaEquilibrium[2,i]=g
    
@@ -60,17 +62,27 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
    if(!all(CurrentPlan==Plan))
    {
      PlanChanging=c(PlanChanging,Omega)
+     Plans[[PlanChangingCounter]]=Plan
+     PlanChangingCounter=PlanChangingCounter+1
    }
    CurrentPlan=Plan
  }
- return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,Plans=Plans,PlansChangingPoints=PlanChanging))
+ 
+ # #Get all patterns that matter
+ # Plans=list(length=length(PlanChanging))
+ # for(i in 1:length(PlanChanging))
+ # {
+ #   Plans[[i]]=FullPlans[[(OmegaIncrease*PlanChanging[i])+1]]
+ # }
+ 
+ return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,Plans=Plans))
 }
 
-PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging)
+PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging,Cost,Lambda)
 {
   XCoordinates=OmegaEquilibriumMatrix[1,]
   YCoordinates=OmegaEquilibriumMatrix[2,]
-  YBoundary=rep(0.1,length(XCoordinates))
+  YBoundary=rep(Cost*Lambda,length(XCoordinates))
   XYCoordinatedataframe=data.frame(XCoordinates)
   XYCoordinatedataframe<-cbind(XYCoordinatedataframe,YCoordinates)
   XYCoordinatedataframe<-cbind(XYCoordinatedataframe,YBoundary)
@@ -95,6 +107,8 @@ PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging)
   print(XYPointdataframe)
   print(MeltedDataFrame2)
   
-  Plot<-ggplot(MeltedDataFrame,aes(x=XCoordinates,y=value,color=variable),show.legend='True')+geom_line()+geom_point(aes(x=XPointChanging,y=YPointChanging),data=MeltedDataFrame2,inherit.aes = F)
+  Plot<-ggplot(MeltedDataFrame,aes(x=XCoordinates,y=value,color=variable),show.legend='True')+geom_line()+
+    geom_point(aes(x=XPointChanging,y=YPointChanging),data=MeltedDataFrame2,inherit.aes = F)+
+    
   print(Plot)
 }
