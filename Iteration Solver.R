@@ -46,6 +46,7 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
  PlanChanging=vector(length=0)
  Plans=list()
  PlanChangingCounter=1
+ BoundaryHit=F
  
  for(i in 1:(OmegaSteps+1))
  {
@@ -66,16 +67,16 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
      PlanChangingCounter=PlanChangingCounter+1
    }
    CurrentPlan=Plan
+   
+   #Find when it hits the boundary
+   if(BoundaryHit==F && g> Cost * Lambda)
+   {
+     BoundaryHitValue=Omega
+     BoundaryHit=T
+   }
  }
  
- # #Get all patterns that matter
- # Plans=list(length=length(PlanChanging))
- # for(i in 1:length(PlanChanging))
- # {
- #   Plans[[i]]=FullPlans[[(OmegaIncrease*PlanChanging[i])+1]]
- # }
- 
- return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,Plans=Plans))
+ return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,Plans=Plans,BoundaryHitValue=BoundaryHitValue))
 }
 
 PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging,Cost,Lambda)
