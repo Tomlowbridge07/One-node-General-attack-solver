@@ -44,6 +44,7 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
  OmegaEquilibrium=matrix(nrow=2,ncol=OmegaSteps+1)
  FullPlans=list(length=OmegaSteps+1)
  PlanChanging=vector(length=0)
+ PlanChangingEqValues=vector(length=0)
  Plans=list()
  PlanChangingCounter=1
  BoundaryHit=F
@@ -64,6 +65,7 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
    {
      PlanChanging=c(PlanChanging,Omega)
      Plans[[PlanChangingCounter]]=Plan
+     PlanChangingEqValues=c(PlanChangingEqValues,g)
      PlanChangingCounter=PlanChangingCounter+1
    }
    CurrentPlan=Plan
@@ -76,7 +78,8 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
    }
  }
  
- return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,Plans=Plans,BoundaryHitValue=BoundaryHitValue))
+ return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,
+             PlanChangingEqValues=PlanChangingEqValues,Plans=Plans,BoundaryHitValue=BoundaryHitValue))
 }
 
 PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging,Cost,Lambda)
