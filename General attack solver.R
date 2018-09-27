@@ -197,3 +197,13 @@ FindEquilibriumValue<-function(RenewInMatrix,CostsToProgress,Lambda,Omega)
   EquilibriumCost=ExpectedCostPerRenewal/ExpectedRenewalLength
   return(EquilibriumCost)
 }
+
+#This function generates the equilibrium function as function of omega i.e g(w)
+GenerateEquilbriumValue<-function(RenewInMatrix,CostsToProgress,Lambda)
+{
+  g<-function(Omega)
+  {
+    return(FindEquilibriumValue(RenewInMatrix,CostsToProgress,Lambda,Omega))
+  }
+  return(g)
+}

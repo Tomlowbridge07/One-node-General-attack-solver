@@ -78,8 +78,64 @@ SolveForMultipleOmega<-function(OmegaMin,OmegaMax,OmegaSteps,AttackTimeDistribut
    }
  }
  
+ #If the boundary hit is still false then we return NUll
+ if(BoundaryHit==F)
+ {
+   BoundaryHitValue=NULL
+ }
+ 
  return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,
              PlanChangingEqValues=PlanChangingEqValues,Plans=Plans,BoundaryHitValue=BoundaryHitValue))
+}
+
+#Similiar to above but runs until the boundary is hit
+SolveForMultipleOmegaUntilBoundary<-function(OmegaStepSize,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis="CDF")
+{
+  #For each omega we run the code, store g for that omega
+  OmegaIncrease=OmegaStepSize
+  CurrentPlan=matrix(rep(-1,(B+1)*(b+1)),nrow=B+1,ncol=b+1)
+  OmegaEquilibrium=matrix(nrow=2,ncol=0)
+  FullPlans=list()
+  PlanChanging=vector(length=0)
+  PlanChangingEqValues=vector(length=0)
+  Plans=list()
+  PlanChangingCounter=1
+  BoundaryHit=F
+  Omega=0
+  i=1
+  
+  while(BoundaryHit==F)
+  {
+    #Run iteration solver to find plan and g
+    Solved=IterationSolver(Omega,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis)
+    g=Solved$EquilibriumValue
+    Plan=Solved$Plan
+    FullPlans[[i]]=Plan
+    i=i+1
+    OmegaEquilibrium=cbind(OmegaEquilibrium,matrix(c(Omega,g),nrow=2,ncol=1))
+    
+    #See if the plan changes
+    if(!all(CurrentPlan==Plan))
+    {
+      PlanChanging=c(PlanChanging,Omega)
+      Plans[[PlanChangingCounter]]=Plan
+      PlanChangingEqValues=c(PlanChangingEqValues,g)
+      PlanChangingCounter=PlanChangingCounter+1
+    }
+    CurrentPlan=Plan
+    
+    #Find when it hits the boundary
+    if(BoundaryHit==F && g> Cost * Lambda)
+    {
+      BoundaryHitValue=Omega
+      BoundaryHit=T
+    }
+    
+    Omega=Omega+OmegaIncrease
+  }
+  
+  return(list(OmegaEquilibriumMatrix=OmegaEquilibrium,FullPlans=FullPlans,PlansChangingPoints=PlanChanging,
+              PlanChangingEqValues=PlanChangingEqValues,Plans=Plans,BoundaryHitValue=BoundaryHitValue)) 
 }
 
 PlotOmegaEquilibrium<-function(OmegaEquilibriumMatrix,PlanChanging,Cost,Lambda)
