@@ -26,8 +26,8 @@ FindSwappingPoint<-function(RenewInMatrix1,RenewInMatrix2,CostsToProgress,Lambda
   }
   
   #We need to check the boundaries
-  print(f(Lowerboundary))
-  print(f(Upperboundary))
+  #print(f(Lowerboundary))
+  #print(f(Upperboundary))
   stopifnot(sign(f(Lowerboundary))!=sign(f(Upperboundary)))
   stopifnot(f(Upperboundary)>f(Lowerboundary))
   
@@ -74,13 +74,14 @@ FindIndexMatrix<-function(OmegaStepSize,AttackTimeDistribution,B,b,Cost,Lambda,M
   CostToProgress=GenerateCostToProgressMatrix(B+1,b+1,Cost,Lambda,AttackTimeDistribution)
   
   #We first solve to the boundary
+  print("Solving for each omega")
   SolvedOE=SolveForMultipleOmegaUntilBoundary(OmegaStepSize,AttackTimeDistribution,B,b,Cost,Lambda,TypeOfAttackTimeDis="CDF")
   
   #Retrive the plans
   Plans=SolvedOE$Plans
   PlansChangingPoints=SolvedOE$PlansChangingPoints
   
-  
+  print("Creating Index Matrix")
   #Index matrix for w*'s to be put into.
   IndexMatrix=matrix(nrow=B+1,ncol=b+1)
   
@@ -91,7 +92,7 @@ FindIndexMatrix<-function(OmegaStepSize,AttackTimeDistribution,B,b,Cost,Lambda,M
     #Find w*
     OmegaStar=FindSwappingPoint(Plans[[i]],Plans[[i+1]],CostToProgress,Lambda,PlansChangingPoints[i],PlansChangingPoints[i+1],MinTolerance,MaxSteps)
     
-    print(OmegaStar)
+    #print(OmegaStar)
     
     #Find what elements have changed in the plan
     for(element in 1:length(Plans[[i]]))
@@ -103,9 +104,58 @@ FindIndexMatrix<-function(OmegaStepSize,AttackTimeDistribution,B,b,Cost,Lambda,M
     }
   }
   
-  
   return(IndexMatrix)
-  
-  
 }
+
+#This function alters the index matrix to have a 
+AlterIndexMatrix<-function(IndexMatrix,IndexCap,IgnoreIndexibility=F)
+{
+  AlteredIndexMatrix=IndexMatrix
+  if(IgnoreIndexibility==F)
+  {
+   #Not Ignoring indexibility we must remove all values which are less on the way down.
+   #We must also remove any values set below
+    
+    
+    #Each column when it hits NA should be NA for the rest of the column.
+    for(j in 1:ncol(IndexMatrix))
+    {
+      #go down the column to the first NA, then replace all others with NA
+      IsNAMode=F
+      for(i in 1:nrow(IndexMatrix))
+      {
+        if(is.na(IndexMatrix[i,j]))
+        {
+          IsNAMode=T
+        }
+        if(IsNAMode==T)
+        {
+          AlteredIndexMatrix[i,j]=NA
+        }
+      }
+    }
+    
+     
+  }
+  else
+  {
+    #Ignoring indexibility we will keep all current indices. So we have no additional work
+  }
+  
+  #then we replace all NA with our boundary value
+  for(i in 1:nrow(AlteredIndexMatrix))
+  {
+    for(j in 1:ncol(AlteredIndexMatrix))
+    {
+      if(is.na(AlteredIndexMatrix[i,j]))
+      {
+        AlteredIndexMatrix[i,j]=IndexCap
+      }
+      
+    }
+  }
+  
+  return(AlteredIndexMatrix)
+}
+
 

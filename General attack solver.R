@@ -123,20 +123,20 @@ FindRenewInRow<-function(CurrentRowNum,EquilibriumCost,NextRowRenewIn,CostsToPro
    CostIfNotRenew=CostIfNotRenew+CostsToProgress[CurrentRowNum+(i-1),j]
   }
   
-  print(CostIfRenew)
-  print(CostIfNotRenew)
+  #print(CostIfRenew)
+  #print(CostIfNotRenew)
   
   #Compare and decide
   if(CostIfRenew <= CostIfNotRenew)
   {
     #we should renew, set currentRowRenewIn=0
-    print("Chosen to renew")
+    #print("Chosen to renew")
     CurrentRowRenewIn[j]=0
   }
   else
   {
     #We should wait
-    print("Chosen to wait")
+    #print("Chosen to wait")
     CurrentRowRenewIn[j]=NextRowRenewIn[j]+1
   }
  }
@@ -149,7 +149,7 @@ FindRenewInMatrix<-function(EquilibriumCost,CostsToProgress)
   RenewInMatrix=matrix(nrow=nrow(CostsToProgress),ncol=ncol(CostsToProgress))
   for(rownum in nrow(CostsToProgress):1)
   {
-    print(rownum)
+    #print(rownum)
     if(rownum==nrow(CostsToProgress))
     {
       #Preset these to be renew immediately (as we assume g<= c lambda)
@@ -159,7 +159,7 @@ FindRenewInMatrix<-function(EquilibriumCost,CostsToProgress)
     {
       #We run the code to figure out the next row up
       RenewInMatrix[rownum,]=FindRenewInRow(rownum,EquilibriumCost,RenewInMatrix[rownum+1,],CostsToProgress)
-      print(RenewInMatrix)
+      #print(RenewInMatrix)
     }
   }
   return(RenewInMatrix)
